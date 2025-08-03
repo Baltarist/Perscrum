@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/user.controller';
 import { validate, validateUuid } from '../middleware/validation.middleware';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticateToken } from '../middleware/auth.middleware';
 import { 
   updateProfileSchema,
   updateSettingsSchema 
@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 // All user routes require authentication
-router.use(authenticate);
+router.use(authenticateToken);
 
 // GET /api/users/profile - Get user profile
 router.get('/profile',

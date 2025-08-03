@@ -99,6 +99,18 @@ export declare const createSubtaskSchema: z.ZodObject<{
     assigneeId: z.ZodOptional<z.ZodString>;
     isAiAssisted: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
+export declare const updateSubtaskSchema: z.ZodObject<{
+    title: z.ZodOptional<z.ZodString>;
+    isCompleted: z.ZodOptional<z.ZodBoolean>;
+    assigneeId: z.ZodOptional<z.ZodString>;
+}, z.core.$strip>;
+export declare const addTeamMemberSchema: z.ZodObject<{
+    email: z.ZodString;
+    role: z.ZodOptional<z.ZodEnum<{
+        member: "member";
+        admin: "admin";
+    }>>;
+}, z.core.$strip>;
 export declare const aiTaskSuggestionsSchema: z.ZodObject<{
     projectId: z.ZodString;
     sprintId: z.ZodOptional<z.ZodString>;

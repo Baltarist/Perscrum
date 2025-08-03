@@ -1,0 +1,23 @@
+AI TEST KOMUTLARI:
+
+1. LOGIN (PowerShell'de çalıştır):
+$login = Invoke-RestMethod -Uri "http://localhost:5000/api/auth/login" -Method Post -Body '{"email":"alex@example.com","password":"password123"}' -ContentType "application/json"
+
+2. TOKEN AL:
+$token = $login.data.tokens.accessToken
+
+3. AI HEALTH CHECK:
+$headers = @{Authorization="Bearer $token"}
+$health = Invoke-RestMethod -Uri "http://localhost:5000/api/ai/health" -Method Get -Headers $headers
+$health.data
+
+4. AI TASK TEST:
+$task = Invoke-RestMethod -Uri "http://localhost:5000/api/ai/task-suggestions" -Method Post -Body '{"projectId":"4790e528-5403-4394-bab3-ab7b07ac73b1","context":"JavaScript project"}' -ContentType "application/json" -Headers $headers
+$task.data
+
+BEKLENEN SONUÇLAR:
+- aiEnabled: True
+- hasApiKey: True  
+- status: operational
+- model: gemini-2.0-flash-001
+- suggestions: Array of task suggestions

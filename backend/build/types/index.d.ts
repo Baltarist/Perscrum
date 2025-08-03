@@ -1,3 +1,4 @@
+import { Request } from 'express';
 export interface ApiResponse<T = any> {
     success: boolean;
     data?: T;
@@ -182,4 +183,18 @@ export declare class ConflictError extends Error {
 export declare class RateLimitError extends Error {
     constructor(message?: string);
 }
+export declare class CustomError extends Error {
+    status: number;
+    type: string;
+    constructor(message: string, status?: number, type?: string);
+}
+export interface RequestWithUser extends Request {
+    user?: {
+        userId: string;
+        id: string;
+        email: string;
+        subscriptionTier: string;
+    };
+}
+export * from '../../generated/prisma';
 //# sourceMappingURL=index.d.ts.map

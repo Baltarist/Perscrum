@@ -10,7 +10,9 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const activeSprint = project.sprints.find(s => s.status === 'active');
+  // Safe access to sprints array
+  const sprints = project.sprints || [];
+  const activeSprint = sprints.find(s => s.status === 'active');
   const tasks = activeSprint?.tasks || [];
   const completedTasks = tasks.filter(t => t.status === TaskStatus.Done).length;
   const totalTasks = tasks.length;

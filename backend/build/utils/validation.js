@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateDateRange = exports.paginationSchema = exports.uuidSchema = exports.paymentMethodSchema = exports.subscriptionUpgradeSchema = exports.aiEducationalContentSchema = exports.aiRetrospectiveSchema = exports.aiSubtaskSuggestionsSchema = exports.aiChatSchema = exports.aiTaskSuggestionsSchema = exports.createSubtaskSchema = exports.updateTaskSchema = exports.createTaskSchema = exports.completeSprintSchema = exports.updateSprintSchema = exports.createSprintSchema = exports.updateProjectSchema = exports.createProjectSchema = exports.updateSettingsSchema = exports.updateProfileSchema = exports.loginSchema = exports.registerSchema = void 0;
+exports.validateDateRange = exports.paginationSchema = exports.uuidSchema = exports.paymentMethodSchema = exports.subscriptionUpgradeSchema = exports.aiEducationalContentSchema = exports.aiRetrospectiveSchema = exports.aiSubtaskSuggestionsSchema = exports.aiChatSchema = exports.aiTaskSuggestionsSchema = exports.addTeamMemberSchema = exports.updateSubtaskSchema = exports.createSubtaskSchema = exports.updateTaskSchema = exports.createTaskSchema = exports.completeSprintSchema = exports.updateSprintSchema = exports.createSprintSchema = exports.updateProjectSchema = exports.createProjectSchema = exports.updateSettingsSchema = exports.updateProfileSchema = exports.loginSchema = exports.registerSchema = void 0;
 const zod_1 = require("zod");
 // User validation schemas
 exports.registerSchema = zod_1.z.object({
@@ -87,6 +87,16 @@ exports.createSubtaskSchema = zod_1.z.object({
     title: zod_1.z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title too long'),
     assigneeId: zod_1.z.string().uuid().optional(),
     isAiAssisted: zod_1.z.boolean().optional()
+});
+exports.updateSubtaskSchema = zod_1.z.object({
+    title: zod_1.z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title too long').optional(),
+    isCompleted: zod_1.z.boolean().optional(),
+    assigneeId: zod_1.z.string().uuid().optional()
+});
+// Team management schemas
+exports.addTeamMemberSchema = zod_1.z.object({
+    email: zod_1.z.string().email('Invalid email format'),
+    role: zod_1.z.enum(['member', 'admin']).optional()
 });
 // AI validation schemas
 exports.aiTaskSuggestionsSchema = zod_1.z.object({

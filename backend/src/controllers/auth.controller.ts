@@ -22,9 +22,14 @@ export class AuthController {
 
   // POST /api/auth/login
   static login = asyncHandler(async (req: Request, res: Response) => {
+    console.log('🎯 AUTH CONTROLLER: Login request received');
+    console.log('🎯 Request body:', { email: req.body.email, passwordLength: req.body.password?.length });
+    
     const result = await AuthService.login(req.body);
+    console.log('🎯 AUTH CONTROLLER: AuthService.login returned successfully');
+    console.log('🎯 Result user email:', result.user.email);
 
-    res.status(200).json({
+    const response = {
       success: true,
       data: {
         message: 'Login successful',
@@ -34,7 +39,11 @@ export class AuthController {
       meta: {
         timestamp: new Date().toISOString()
       }
-    });
+    };
+
+    console.log('🎯 AUTH CONTROLLER: Sending response to frontend...');
+    res.status(200).json(response);
+    console.log('✅ AUTH CONTROLLER: Response sent successfully!');
   });
 
   // POST /api/auth/refresh

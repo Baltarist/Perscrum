@@ -1,0 +1,76 @@
+### PHASE 3 - AI Integration Test Endpoints
+### Google Gemini AI Integration Tests
+
+# First login to get access token
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alex@example.com",
+  "password": "password123"
+}
+
+### 1. AI Health Check
+GET http://localhost:5000/api/ai/health
+Authorization: Bearer {{access_token}}
+
+### 2. AI Usage Stats
+GET http://localhost:5000/api/ai/usage-stats
+Authorization: Bearer {{access_token}}
+
+### 3. AI Task Suggestions (requires projectId)
+POST http://localhost:5000/api/ai/task-suggestions
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "projectId": "4790e528-5403-4394-bab3-ab7b07ac73b1",
+  "context": "Web application development project for learning platform"
+}
+
+### 4. AI Chat with Coach
+POST http://localhost:5000/api/ai/chat
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "message": "How can I improve my sprint planning?",
+  "projectId": "4790e528-5403-4394-bab3-ab7b07ac73b1"
+}
+
+### 5. AI Subtask Suggestions (requires taskId)
+POST http://localhost:5000/api/ai/subtask-suggestions
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "taskId": "some-task-uuid-here"
+}
+
+### 6. AI Sprint Analysis (requires sprintId)
+POST http://localhost:5000/api/ai/sprint-analysis
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "sprintId": "some-sprint-uuid-here"
+}
+
+### 7. Test All Project API (to get real projectId)
+GET http://localhost:5000/api/projects
+Authorization: Bearer {{access_token}}
+
+###
+### 📝 NOTES:
+### - All AI endpoints require authentication
+### - AI features require GEMINI_API_KEY environment variable 
+### - Current status: "configuration_required" (need real API key)
+### - Usage tracking is working (0/1000 daily limit for pro tier)
+### - All endpoints have proper validation and error handling
+###
+### 🔧 TO ENABLE AI FEATURES:
+### 1. Get Google Gemini API key from: https://ai.google.dev/
+### 2. Update .env file: GEMINI_API_KEY=your-real-api-key
+### 3. Restart backend server
+### 4. Test endpoints - they should work with real AI responses!
+###

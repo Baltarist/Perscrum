@@ -1,11 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { PORT, NODE_ENV, CORS_ORIGIN } from './config/constants';
-import { connectRedis } from './config/redis';
+// import { connectRedis } from './config/redis'; // Redis disabled for development
 import prisma from './config/database';
 import { globalRateLimit } from './middleware/rateLimit.middleware';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
+import { AIService } from './services/ai.service';
 
 // Import routes
 import apiRoutes from './routes/index';
@@ -83,14 +87,6 @@ app.use('/api/tasks', (req, res) => {
   });
 });
 
-app.use('/api/ai', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'AI routes will be implemented in Phase 3',
-    phase: 'Phase 3 - AI Integration'
-  });
-});
-
 // Temporary test endpoint to verify database connection
 app.get('/api/test-db', async (req, res) => {
   try {
@@ -126,9 +122,22 @@ const startServer = async () => {
     await prisma.$connect();
     console.log('✅ Database connected successfully');
 
-    // Connect to Redis
-    await connectRedis();
-    console.log('✅ Redis connected successfully');
+    // Initialize AI Service
+    if (process.env.AI_ENABLED === 'true') {
+      try {
+        AIService.initialize();
+        console.log('🤖 AI Service initialized successfully');
+      } catch (error) {
+        console.error('⚠️ AI Service initialization failed:', error);
+        console.log('🔧 AI features will be disabled. Set GEMINI_API_KEY in .env to enable.');
+      }
+    } else {
+      console.log('⚠️ AI features disabled in configuration');
+    }
+
+    // Connect to Redis - disabled for development
+    // await connectRedis();
+    console.log('⚠️ Redis disabled for development');
 
     // Start server
     app.listen(PORT, () => {

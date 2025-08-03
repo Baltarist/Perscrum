@@ -3,14 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const constants_1 = require("./config/constants");
-const redis_1 = require("./config/redis");
+// import { connectRedis } from './config/redis'; // Redis disabled for development
 const database_1 = __importDefault(require("./config/database"));
 const rateLimit_middleware_1 = require("./middleware/rateLimit.middleware");
 const errorHandler_middleware_1 = require("./middleware/errorHandler.middleware");
+const ai_service_1 = require("./services/ai.service");
 // Import routes
 const index_1 = __importDefault(require("./routes/index"));
 const app = (0, express_1.default)();
@@ -76,13 +79,6 @@ app.use('/api/tasks', (req, res) => {
         phase: 'Phase 2 - Core Features'
     });
 });
-app.use('/api/ai', (req, res) => {
-    res.json({
-        success: true,
-        message: 'AI routes will be implemented in Phase 3',
-        phase: 'Phase 3 - AI Integration'
-    });
-});
 // Temporary test endpoint to verify database connection
 app.get('/api/test-db', async (req, res) => {
     try {
@@ -115,9 +111,23 @@ const startServer = async () => {
         // Connect to database
         await database_1.default.$connect();
         console.log('✅ Database connected successfully');
-        // Connect to Redis
-        await (0, redis_1.connectRedis)();
-        console.log('✅ Redis connected successfully');
+        // Initialize AI Service
+        if (process.env.AI_ENABLED === 'true') {
+            try {
+                ai_service_1.AIService.initialize();
+                console.log('🤖 AI Service initialized successfully');
+            }
+            catch (error) {
+                console.error('⚠️ AI Service initialization failed:', error);
+                console.log('🔧 AI features will be disabled. Set GEMINI_API_KEY in .env to enable.');
+            }
+        }
+        else {
+            console.log('⚠️ AI features disabled in configuration');
+        }
+        // Connect to Redis - disabled for development
+        // await connectRedis();
+        console.log('⚠️ Redis disabled for development');
         // Start server
         app.listen(constants_1.PORT, () => {
             console.log(`🚀 Server running on port ${constants_1.PORT} in ${constants_1.NODE_ENV} mode`);

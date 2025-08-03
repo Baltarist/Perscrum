@@ -1,25 +1,19 @@
 
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuthApi } from '../hooks/useAuthApi';
 import ProjectIcon from './icons/ProjectIcon';
 import SparklesIcon from './icons/SparklesIcon';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, register, isLoading, error, clearError } = useAuthApi();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    const success = await login(email, password);
-    if (!success) {
-      setError('Geçersiz e-posta veya şifre. Lütfen tekrar deneyin.');
-    }
-    setIsLoading(false);
+    clearError();
+    const success = await login({ email, password });
+    // Error handling is done by the hook
   };
   
   // Simulate social login by logging in a predefined user

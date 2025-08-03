@@ -98,6 +98,18 @@ export const createSubtaskSchema = z.object({
   isAiAssisted: z.boolean().optional()
 });
 
+export const updateSubtaskSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters').max(100, 'Title too long').optional(),
+  isCompleted: z.boolean().optional(),
+  assigneeId: z.string().uuid().optional()
+});
+
+// Team management schemas
+export const addTeamMemberSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  role: z.enum(['member', 'admin']).optional()
+});
+
 // AI validation schemas
 export const aiTaskSuggestionsSchema = z.object({
   projectId: z.string().uuid(),

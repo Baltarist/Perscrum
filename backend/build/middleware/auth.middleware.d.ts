@@ -10,7 +10,7 @@ declare global {
         }
     }
 }
-export declare const authenticate: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const authenticateToken: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export declare const optionalAuthenticate: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export declare const requireSubscription: (requiredTier: "pro" | "enterprise") => (req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
 export declare const requireProjectAccess: (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;

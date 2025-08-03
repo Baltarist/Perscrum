@@ -7,7 +7,7 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const validation_1 = require("../utils/validation");
 const router = (0, express_1.Router)();
 // All user routes require authentication
-router.use(auth_middleware_1.authenticate);
+router.use(auth_middleware_1.authenticateToken);
 // GET /api/users/profile - Get user profile
 router.get('/profile', user_controller_1.UserController.getProfile);
 // PUT /api/users/profile - Update user profile

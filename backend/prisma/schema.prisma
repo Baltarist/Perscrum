@@ -1,5 +1,5 @@
-// Kişisel Scrum Koçu AI - Database Schema
-// Based on backend-technical-analysis.md specifications
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -39,148 +39,148 @@ enum TaskStatus {
 }
 
 enum TeamRole {
-  leader
-  developer
   member
+  admin
 }
 
 enum NotificationType {
-  task_assigned
-  sprint_completed
   project_updated
-  ai_suggestion
+  sprint_completed
+  task_assigned
+  daily_reminder
+  badge_earned
+  system_update
 }
 
-// User Management
+// Models
 model User {
-  id                   String           @id @default(uuid())
-  email                String           @unique
-  passwordHash         String           @map("password_hash")
-  displayName          String           @map("display_name")
-  subscriptionTier     SubscriptionTier @default(free) @map("subscription_tier")
-  aiUsageCount         Int              @default(0) @map("ai_usage_count")
-  subscriptionEndDate  DateTime?        @map("subscription_end_date")
-  createdAt            DateTime         @default(now()) @map("created_at")
-  updatedAt            DateTime         @updatedAt @map("updated_at")
+  id                   String          @id @default(uuid())
+  email                String          @unique
+  passwordHash         String
+  displayName          String
+  subscriptionTier     SubscriptionTier @default(free)
+  aiUsageCount         Int             @default(0)
+  subscriptionEndDate  DateTime?
+  dailyFocusTaskId     String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
   // Relations
-  settings           UserSettings?
-  ownedProjects      Project[]        @relation("ProjectOwner")
-  projectMemberships TeamMember[]
-  createdTasks       Task[]           @relation("TaskCreator")
-  assignedTasks      Task[]           @relation("TaskAssignee")
-  createdSubtasks    Subtask[]        @relation("SubtaskCreator")
-  assignedSubtasks   Subtask[]        @relation("SubtaskAssignee")
-  checkins           DailyCheckin[]
-  badges             UserBadge[]
-  notifications      Notification[]
+  settings             UserSettings?
+  ownedProjects        Project[]       @relation("ProjectOwner")
+  teamMemberships      TeamMember[]
+  createdTasks         Task[]          @relation("TaskCreator")
+  assignedTasks        Task[]          @relation("TaskAssignee")
+  createdSubtasks      Subtask[]       @relation("SubtaskCreator")
+  assignedSubtasks     Subtask[]       @relation("SubtaskAssignee")
+  taskStatusChanges    TaskStatusChange[]
+  aiComments           AIComment[]
+  sentChatMessages     ChatMessage[]
+  badges               UserBadge[]
+  dailyCheckins        DailyCheckin[]
+  notifications        Notification[]
 
   @@map("users")
 }
 
 model UserSettings {
-  userId               String  @id @map("user_id")
-  sprintDurationWeeks  Int     @default(1) @map("sprint_duration_weeks")
-  dailyCheckinEnabled  Boolean @default(true) @map("daily_checkin_enabled")
-  dailyCheckinTime     String  @default("09:00") @map("daily_checkin_time")
-  retrospectiveEnabled Boolean @default(true) @map("retrospective_enabled")
-  aiCoachName          String  @default("Koç") @map("ai_coach_name")
-  dailyFocusTaskId     String? @map("daily_focus_task_id")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  userId               String   @id
+  sprintDurationWeeks  Int      @default(1)
+  dailyCheckinEnabled  Boolean  @default(true)
+  dailyCheckinTime     String   @default("09:00")
+  retrospectiveEnabled Boolean  @default(true)
+  aiCoachName          String   @default("AI Coach")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
 
-// Project Management
 model Project {
-  id                     String        @id @default(uuid())
-  title                  String
-  description            String?
-  status                 ProjectStatus @default(active)
-  colorTheme             String        @default("blue") @map("color_theme")
-  targetCompletionDate   DateTime      @map("target_completion_date")
-  estimatedCompletionDate DateTime     @map("estimated_completion_date")
-  totalSprints           Int           @map("total_sprints")
-  sprintDurationWeeks    Int           @map("sprint_duration_weeks")
-  ownerId                String        @map("owner_id")
-  createdAt              DateTime      @default(now()) @map("created_at")
-  updatedAt              DateTime      @updatedAt @map("updated_at")
+  id                      String        @id @default(uuid())
+  title                   String
+  description             String?
+  status                  ProjectStatus @default(active)
+  colorTheme              String        @default("#3B82F6")
+  targetCompletionDate    DateTime
+  estimatedCompletionDate DateTime
+  totalSprints            Int           @default(10)
+  sprintDurationWeeks     Int           @default(1)
+  ownerId                 String
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
   // Relations
-  owner       User           @relation("ProjectOwner", fields: [ownerId], references: [id])
-  sprints     Sprint[]
-  teamMembers TeamMember[]
-  notifications Notification[]
+  owner                   User          @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  teamMembers             TeamMember[]
+  sprints                 Sprint[]
+  notifications           Notification[]
 
   @@map("projects")
 }
 
 model TeamMember {
   id        String   @id @default(uuid())
-  projectId String   @map("project_id")
-  userId    String   @map("user_id")
+  projectId String
+  userId    String
   role      TeamRole @default(member)
-  joinedAt  DateTime @default(now()) @map("joined_at")
+  joinedAt  DateTime @default(now())
 
   // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@map("team_members")
 }
 
-// Sprint Management
 model Sprint {
-  id                 String       @id @default(uuid())
-  projectId          String       @map("project_id")
-  sprintNumber       Int          @map("sprint_number")
-  goal               String?
-  status             SprintStatus @default(planning)
-  startDate          DateTime?    @map("start_date")
-  endDate            DateTime?    @map("end_date")
-  velocityPoints     Int?         @map("velocity_points")
-  retrospectiveGood  String?      @map("retrospective_good")
-  retrospectiveImprove String?    @map("retrospective_improve")
-  createdAt          DateTime     @default(now()) @map("created_at")
-  updatedAt          DateTime     @updatedAt @map("updated_at")
+  id                   String       @id @default(uuid())
+  projectId            String
+  sprintNumber         Int
+  goal                 String?
+  status               SprintStatus @default(planning)
+  startDate            DateTime
+  endDate              DateTime
+  velocityPoints       Int?
+  retrospectiveGood    String?
+  retrospectiveImprove String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   // Relations
-  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks      Task[]
-  chatHistory ChatMessage[]
+  project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks                Task[]
 
   @@unique([projectId, sprintNumber])
   @@map("sprints")
 }
 
-// Task Management
 model Task {
   id           String     @id @default(uuid())
-  sprintId     String     @map("sprint_id")
+  sprintId     String
   title        String
   description  String?
   status       TaskStatus @default(todo)
-  storyPoints  Int?       @map("story_points")
-  plannedDate  DateTime?  @map("planned_date")
-  completedAt  DateTime?  @map("completed_at")
-  createdById  String     @map("created_by_id")
-  assigneeId   String?    @map("assignee_id")
-  isAiAssisted Boolean    @default(false) @map("is_ai_assisted")
+  storyPoints  Int?
+  plannedDate  DateTime?
+  completedAt  DateTime?
   notes        String?    @default("")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdById  String
+  assigneeId   String?
+  isAiAssisted Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   // Relations
-  sprint       Sprint         @relation(fields: [sprintId], references: [id], onDelete: Cascade)
-  createdBy    User           @relation("TaskCreator", fields: [createdById], references: [id])
-  assignee     User?          @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  sprint       Sprint     @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  createdBy    User       @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee     User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
   subtasks     Subtask[]
-  statusHistory TaskStatusChange[]
+  statusChanges TaskStatusChange[]
   aiComments   AIComment[]
 
   @@map("tasks")
@@ -188,120 +188,120 @@ model Task {
 
 model Subtask {
   id           String   @id @default(uuid())
-  taskId       String   @map("task_id")
+  taskId       String
   title        String
-  isCompleted  Boolean  @default(false) @map("is_completed")
-  createdById  String   @map("created_by_id")
-  assigneeId   String?  @map("assignee_id")
-  isAiAssisted Boolean  @default(false) @map("is_ai_assisted")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  isCompleted  Boolean  @default(false)
+  createdById  String
+  assigneeId   String?
+  isAiAssisted Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  task      Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  createdBy User @relation("SubtaskCreator", fields: [createdById], references: [id])
-  assignee  User? @relation("SubtaskAssignee", fields: [assigneeId], references: [id])
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdBy    User     @relation("SubtaskCreator", fields: [createdById], references: [id])
+  assignee     User?    @relation("SubtaskAssignee", fields: [assigneeId], references: [id])
 
   @@map("subtasks")
 }
 
 model TaskStatusChange {
-  id        String     @id @default(uuid())
-  taskId    String     @map("task_id")
-  changedBy String     @map("changed_by")
-  fromStatus TaskStatus @map("from_status")
-  toStatus   TaskStatus @map("to_status")
-  timestamp  DateTime   @default(now())
+  id          String     @id @default(uuid())
+  taskId      String
+  fromStatus  TaskStatus @default(todo)
+  toStatus    TaskStatus
+  changedById String
+  changedAt   DateTime   @default(now())
 
   // Relations
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  changedBy   User       @relation(fields: [changedById], references: [id])
 
   @@map("task_status_changes")
 }
 
-// AI Features
 model AIComment {
-  id     String @id @default(uuid())
-  taskId String @map("task_id")
-  text   String
-  type   String // 'suggestion', 'reminder', 'encouragement'
-  createdAt DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
 
   // Relations
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("ai_comments")
 }
 
 model ChatMessage {
-  id       String @id @default(uuid())
-  sprintId String @map("sprint_id")
-  role     String // 'user' or 'model'
-  content  String
-  timestamp DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  response  String?
+  createdAt DateTime @default(now())
 
   // Relations
-  sprint Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("chat_messages")
 }
 
-// Gamification
 model Badge {
-  id       String @id @default(uuid())
-  name     String
-  criteria String
-  icon     String
-  type     String // 'consistency', 'achievement', 'streak', 'planning'
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  iconUrl     String?
+  createdAt   DateTime @default(now())
 
   // Relations
-  userBadges UserBadge[]
+  userBadges  UserBadge[]
 
   @@map("badges")
 }
 
 model UserBadge {
-  id      String @id @default(uuid())
-  userId  String @map("user_id")
-  badgeId String @map("badge_id")
-  earnedAt DateTime @default(now()) @map("earned_at")
+  id       String   @id @default(uuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
 
   // Relations
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge    @relation(fields: [badgeId], references: [id])
 
   @@unique([userId, badgeId])
   @@map("user_badges")
 }
 
 model DailyCheckin {
-  id     String @id @default(uuid())
-  userId String @map("user_id")
-  date   DateTime @default(now())
-  mood   String?
-  notes  String?
+  id           String   @id @default(uuid())
+  userId       String
+  date         DateTime
+  mood         Int      // 1-5 scale
+  productivity Int      // 1-5 scale
+  notes        String?
+  createdAt    DateTime @default(now())
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@map("daily_checkins")
 }
 
-// Notifications
 model Notification {
   id        String           @id @default(uuid())
-  userId    String           @map("user_id")
-  projectId String?          @map("project_id")
+  userId    String
+  projectId String?
   type      NotificationType
   message   String
-  isRead    Boolean          @default(false) @map("is_read")
-  createdAt DateTime         @default(now()) @map("created_at")
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
   // Relations
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }

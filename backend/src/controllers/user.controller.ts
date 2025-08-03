@@ -40,7 +40,7 @@ export class UserController {
       });
     }
 
-    const updatedUser = await UserService.updateProfile(req.user.userId, req.body);
+    const updatedUser = await UserService.updateUserProfile(req.user.userId, req.body);
 
     res.status(200).json({
       success: true,
@@ -91,7 +91,7 @@ export class UserController {
       });
     }
 
-    const updatedSettings = await UserService.updateSettings(req.user.userId, req.body);
+    const updatedSettings = await UserService.updateUserSettings(req.user.userId, req.body);
 
     res.status(200).json({
       success: true,
@@ -117,8 +117,8 @@ export class UserController {
       });
     }
 
-    const { mood, notes } = req.body;
-    const result = await UserService.recordDailyCheckin(req.user.userId, mood, notes);
+    const { mood, productivity, notes } = req.body;
+    const result = await UserService.recordDailyCheckin(req.user.userId, { mood, productivity, notes });
 
     res.status(201).json({
       success: true,
@@ -173,7 +173,7 @@ export class UserController {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
 
-    const result = await UserService.getUserNotifications(req.user.userId, page, limit);
+    const result = await UserService.getNotifications(req.user.userId, page, limit);
 
     res.status(200).json({
       success: true,
@@ -231,7 +231,7 @@ export class UserController {
     res.status(200).json({
       success: true,
       data: {
-        message: `${result.updatedCount} notifications marked as read`
+        message: 'All notifications marked as read'
       },
       meta: {
         timestamp: new Date().toISOString()
@@ -324,11 +324,11 @@ export class UserController {
       });
     }
 
-    const result = await UserService.deleteAccount(req.user.userId, password);
+    await UserService.deleteAccount(req.user.userId);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: { message: 'Account deleted successfully' },
       meta: {
         timestamp: new Date().toISOString()
       }

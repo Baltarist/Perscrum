@@ -1,0 +1,197 @@
+### FAZ 2 - PROJECT MANAGEMENT API TESTS
+### Backend Server: http://localhost:5000
+
+### 1. LOGIN - Get Access Token
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alex@example.com",
+  "password": "password123"
+}
+
+### Store the accessToken from response above
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+
+### 2. CREATE PROJECT
+POST http://localhost:5000/api/projects
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "AI-Powered Scrum Project",
+  "description": "Building an intelligent project management system",
+  "targetCompletionDate": "2024-12-31",
+  "totalSprints": 6,
+  "sprintDurationWeeks": 1,
+  "colorTheme": "#6366F1"
+}
+
+### Store projectId from response
+@projectId = YOUR_PROJECT_ID_HERE
+
+### 3. GET ALL PROJECTS
+GET http://localhost:5000/api/projects
+Authorization: Bearer {{accessToken}}
+
+### 4. GET PROJECT DETAILS
+GET http://localhost:5000/api/projects/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 5. CREATE SPRINT
+POST http://localhost:5000/api/projects/{{projectId}}/sprints
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "goal": "Setup project infrastructure and basic authentication",
+  "startDate": "2024-08-05",
+  "endDate": "2024-08-12"
+}
+
+### Store sprintId from response
+@sprintId = YOUR_SPRINT_ID_HERE
+
+### 6. GET PROJECT SPRINTS
+GET http://localhost:5000/api/projects/{{projectId}}/sprints
+Authorization: Bearer {{accessToken}}
+
+### 7. START SPRINT
+POST http://localhost:5000/api/sprints/{{sprintId}}/start
+Authorization: Bearer {{accessToken}}
+
+### 8. CREATE TASK
+POST http://localhost:5000/api/projects/{{projectId}}/sprints/{{sprintId}}/tasks
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Setup Database Schema",
+  "description": "Design and implement the database schema for user management and project structure",
+  "storyPoints": 8,
+  "plannedDate": "2024-08-07"
+}
+
+### Store taskId from response
+@taskId = YOUR_TASK_ID_HERE
+
+### 9. CREATE ANOTHER TASK
+POST http://localhost:5000/api/projects/{{projectId}}/sprints/{{sprintId}}/tasks
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Implement JWT Authentication",
+  "description": "Add secure authentication with JWT tokens",
+  "storyPoints": 5,
+  "plannedDate": "2024-08-08"
+}
+
+### 10. GET SPRINT TASKS
+GET http://localhost:5000/api/projects/{{projectId}}/sprints/{{sprintId}}/tasks
+Authorization: Bearer {{accessToken}}
+
+### 11. UPDATE TASK STATUS
+PUT http://localhost:5000/api/tasks/{{taskId}}/status
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "in_progress"
+}
+
+### 12. UPDATE TASK DETAILS
+PUT http://localhost:5000/api/tasks/{{taskId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Setup Database Schema with Prisma",
+  "description": "Design and implement the database schema using Prisma ORM for better type safety",
+  "storyPoints": 8,
+  "notes": "Remember to add proper foreign key constraints"
+}
+
+### 13. CREATE SUBTASK
+POST http://localhost:5000/api/tasks/{{taskId}}/subtasks
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Design User table schema",
+  "assigneeId": null
+}
+
+### 14. GET TASK DETAILS
+GET http://localhost:5000/api/tasks/{{taskId}}
+Authorization: Bearer {{accessToken}}
+
+### 15. GET USER'S TASKS
+GET http://localhost:5000/api/users/tasks?status=in_progress
+Authorization: Bearer {{accessToken}}
+
+### 16. GET SPRINT STATISTICS
+GET http://localhost:5000/api/sprints/{{sprintId}}/stats
+Authorization: Bearer {{accessToken}}
+
+### 17. GET PROJECT STATISTICS
+GET http://localhost:5000/api/projects/{{projectId}}/stats
+Authorization: Bearer {{accessToken}}
+
+### 18. ADD TEAM MEMBER (will fail if user doesn't exist)
+POST http://localhost:5000/api/projects/{{projectId}}/members
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "email": "teammate@example.com",
+  "role": "member"
+}
+
+### 19. GET TEAM MEMBERS
+GET http://localhost:5000/api/projects/{{projectId}}/members
+Authorization: Bearer {{accessToken}}
+
+### 20. COMPLETE TASK
+PUT http://localhost:5000/api/tasks/{{taskId}}/status
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "done"
+}
+
+### 21. COMPLETE SPRINT
+POST http://localhost:5000/api/sprints/{{sprintId}}/complete
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "retrospectiveGood": "We successfully completed the database setup and authentication. Team collaboration was excellent.",
+  "retrospectiveImprove": "We could improve our estimation accuracy and add more detailed planning for complex tasks."
+}
+
+### 22. UPDATE PROJECT STATUS
+PUT http://localhost:5000/api/projects/{{projectId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "status": "active",
+  "description": "AI-Powered Scrum Project - Phase 1 completed successfully!"
+}
+
+### 23. GET UPDATED PROJECT STATS
+GET http://localhost:5000/api/projects/{{projectId}}/stats
+Authorization: Bearer {{accessToken}}
+
+### BONUS: Health Check
+GET http://localhost:5000/api/health
+
+### BONUS: Get User Profile
+GET http://localhost:5000/api/users/profile
+Authorization: Bearer {{accessToken}}
+
+### BONUS: Get Notifications
+GET http://localhost:5000/api/users/notifications
+Authorization: Bearer {{accessToken}}

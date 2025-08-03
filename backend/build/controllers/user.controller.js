@@ -41,7 +41,7 @@ UserController.updateProfile = (0, errorHandler_middleware_1.asyncHandler)(async
             }
         });
     }
-    const updatedUser = await user_service_1.UserService.updateProfile(req.user.userId, req.body);
+    const updatedUser = await user_service_1.UserService.updateUserProfile(req.user.userId, req.body);
     res.status(200).json({
         success: true,
         data: {
@@ -86,7 +86,7 @@ UserController.updateSettings = (0, errorHandler_middleware_1.asyncHandler)(asyn
             }
         });
     }
-    const updatedSettings = await user_service_1.UserService.updateSettings(req.user.userId, req.body);
+    const updatedSettings = await user_service_1.UserService.updateUserSettings(req.user.userId, req.body);
     res.status(200).json({
         success: true,
         data: {
@@ -109,8 +109,8 @@ UserController.dailyCheckin = (0, errorHandler_middleware_1.asyncHandler)(async 
             }
         });
     }
-    const { mood, notes } = req.body;
-    const result = await user_service_1.UserService.recordDailyCheckin(req.user.userId, mood, notes);
+    const { mood, productivity, notes } = req.body;
+    const result = await user_service_1.UserService.recordDailyCheckin(req.user.userId, { mood, productivity, notes });
     res.status(201).json({
         success: true,
         data: {
@@ -158,7 +158,7 @@ UserController.getNotifications = (0, errorHandler_middleware_1.asyncHandler)(as
     }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
-    const result = await user_service_1.UserService.getUserNotifications(req.user.userId, page, limit);
+    const result = await user_service_1.UserService.getNotifications(req.user.userId, page, limit);
     res.status(200).json({
         success: true,
         data: {
@@ -209,7 +209,7 @@ UserController.markAllNotificationsAsRead = (0, errorHandler_middleware_1.asyncH
     res.status(200).json({
         success: true,
         data: {
-            message: `${result.updatedCount} notifications marked as read`
+            message: 'All notifications marked as read'
         },
         meta: {
             timestamp: new Date().toISOString()
@@ -290,10 +290,10 @@ UserController.deleteAccount = (0, errorHandler_middleware_1.asyncHandler)(async
             }
         });
     }
-    const result = await user_service_1.UserService.deleteAccount(req.user.userId, password);
+    await user_service_1.UserService.deleteAccount(req.user.userId);
     res.status(200).json({
         success: true,
-        data: result,
+        data: { message: 'Account deleted successfully' },
         meta: {
             timestamp: new Date().toISOString()
         }

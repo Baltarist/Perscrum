@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 // API Response Types based on backend-rules-file.md
 
 export interface ApiResponse<T = any> {
@@ -239,3 +241,29 @@ export class RateLimitError extends Error {
     this.name = 'RateLimitError';
   }
 }
+
+// Custom Error class for service layer
+export class CustomError extends Error {
+  public status: number;
+  public type: string;
+
+  constructor(message: string, status: number = 500, type: string = 'INTERNAL_ERROR') {
+    super(message);
+    this.name = 'CustomError';
+    this.status = status;
+    this.type = type;
+  }
+}
+
+// Express Request with User Type
+export interface RequestWithUser extends Request {
+  user?: {
+    userId: string;
+    id: string;
+    email: string;
+    subscriptionTier: string;
+  };
+}
+
+// Re-export Prisma generated types
+export * from '../../generated/prisma';

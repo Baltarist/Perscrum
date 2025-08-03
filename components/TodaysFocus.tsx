@@ -15,6 +15,11 @@ interface TodaysFocusProps {
 }
 
 const TodaysFocus: React.FC<TodaysFocusProps> = ({ focusItems, dailyFocusId }) => {
+  // Safety check for undefined focusItems
+  if (!focusItems || !Array.isArray(focusItems)) {
+    return null;
+  }
+
   const dailyFocusItem = dailyFocusId ? focusItems.find(item => item.task.id === dailyFocusId) : null;
   const otherItems = focusItems.filter(item => item.task.id !== dailyFocusId).slice(0, 4);
 

@@ -16,7 +16,7 @@ router.post('/refresh', auth_controller_1.AuthController.refreshToken);
 // POST /api/auth/logout - Logout user
 router.post('/logout', auth_controller_1.AuthController.logout);
 // GET /api/auth/me - Get current user profile
-router.get('/me', auth_middleware_1.authenticate, auth_controller_1.AuthController.getCurrentUser);
+router.get('/me', auth_middleware_1.authenticateToken, auth_controller_1.AuthController.getCurrentUser);
 // Future routes (not implemented yet)
 // POST /api/auth/verify-email - Verify email address
 router.post('/verify-email', auth_controller_1.AuthController.verifyEmail);

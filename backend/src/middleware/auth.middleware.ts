@@ -17,7 +17,7 @@ declare global {
 }
 
 // Authentication middleware
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = extractTokenFromHeader(req.headers.authorization);
     

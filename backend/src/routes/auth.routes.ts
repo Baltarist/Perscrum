@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { validate } from '../middleware/validation.middleware';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticateToken } from '../middleware/auth.middleware';
 import { authRateLimit } from '../middleware/rateLimit.middleware';
 import { 
   registerSchema, 
@@ -36,7 +36,7 @@ router.post('/logout',
 
 // GET /api/auth/me - Get current user profile
 router.get('/me',
-  authenticate,
+  authenticateToken,
   AuthController.getCurrentUser
 );
 

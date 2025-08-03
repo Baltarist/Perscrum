@@ -103,20 +103,36 @@ class AuthService {
     // Login user
     static async login(loginData) {
         const { email, password } = loginData;
+        // Debug logging
+        console.log('🔍 Login attempt:', { email, passwordLength: password?.length });
         // Find user with settings
         const user = await database_1.default.user.findUnique({
             where: { email },
             include: { settings: true }
         });
+        console.log('🔍 User found:', user ? 'YES' : 'NO');
+        if (user) {
+            console.log('🔍 User details:', {
+                id: user.id,
+                email: user.email,
+                passwordHashLength: user.passwordHash?.length
+            });
+        }
         if (!user) {
+            console.log('❌ User not found for email:', email);
             throw new types_1.AuthenticationError('Invalid email or password');
         }
         // Verify password
+        console.log('🔍 Comparing passwords...');
         const isPasswordValid = await bcryptjs_1.default.compare(password, user.passwordHash);
+        console.log('🔍 Password valid:', isPasswordValid);
         if (!isPasswordValid) {
+            console.log('❌ Password validation failed');
             throw new types_1.AuthenticationError('Invalid email or password');
         }
+        console.log('✅ Password validation successful, proceeding with login...');
         // Check subscription validity
+        console.log('🔍 Checking subscription...');
         let currentSubscriptionTier = user.subscriptionTier;
         if (user.subscriptionTier !== 'free' && user.subscriptionEndDate) {
             const now = new Date();
@@ -131,31 +147,44 @@ class AuthService {
                     }
                 });
                 currentSubscriptionTier = 'free';
+                console.log('🔍 Subscription expired, downgraded to free');
             }
         }
+        console.log('🔍 Current subscription tier:', currentSubscriptionTier);
         // Generate tokens
+        console.log('🔍 Generating JWT tokens...');
         const payload = {
             userId: user.id,
             email: user.email,
             subscriptionTier: currentSubscriptionTier
         };
-        const accessToken = (0, jwt_1.generateAccessToken)(payload);
-        const refreshToken = (0, jwt_1.generateRefreshToken)({ userId: user.id });
-        return {
-            user: {
-                id: user.id,
-                email: user.email,
-                displayName: user.displayName,
-                subscriptionTier: currentSubscriptionTier,
-                aiUsageCount: user.aiUsageCount,
-                subscriptionEndDate: user.subscriptionEndDate,
-                settings: user.settings
-            },
-            tokens: {
-                accessToken,
-                refreshToken
-            }
-        };
+        try {
+            const accessToken = (0, jwt_1.generateAccessToken)(payload);
+            const refreshToken = (0, jwt_1.generateRefreshToken)({ userId: user.id });
+            console.log('✅ JWT tokens generated successfully');
+            console.log('🔍 Preparing response...');
+            const response = {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    displayName: user.displayName,
+                    subscriptionTier: currentSubscriptionTier,
+                    aiUsageCount: user.aiUsageCount,
+                    subscriptionEndDate: user.subscriptionEndDate?.toISOString() || null,
+                    settings: user.settings || null
+                },
+                tokens: {
+                    accessToken,
+                    refreshToken
+                }
+            };
+            console.log('✅ Login response ready, returning...');
+            return response;
+        }
+        catch (error) {
+            console.error('❌ JWT token generation failed:', error);
+            throw error;
+        }
     }
     // Refresh access token
     static async refreshToken(refreshToken) {

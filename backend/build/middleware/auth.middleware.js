@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requireProjectAccess = exports.requireSubscription = exports.optionalAuthenticate = exports.authenticate = void 0;
+exports.requireProjectAccess = exports.requireSubscription = exports.optionalAuthenticate = exports.authenticateToken = void 0;
 const jwt_1 = require("../utils/jwt");
 const types_1 = require("../types");
 const database_1 = __importDefault(require("../config/database"));
 // Authentication middleware
-const authenticate = async (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
     try {
         const token = (0, jwt_1.extractTokenFromHeader)(req.headers.authorization);
         if (!token) {
@@ -61,7 +61,7 @@ const authenticate = async (req, res, next) => {
         });
     }
 };
-exports.authenticate = authenticate;
+exports.authenticateToken = authenticateToken;
 // Optional authentication middleware (for endpoints that work with or without auth)
 const optionalAuthenticate = async (req, res, next) => {
     try {

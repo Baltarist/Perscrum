@@ -12,12 +12,11 @@ export declare class AuthService {
                 createdAt: Date;
                 updatedAt: Date;
                 sprintDurationWeeks: number;
+                userId: string;
                 dailyCheckinEnabled: boolean;
                 dailyCheckinTime: string;
                 retrospectiveEnabled: boolean;
                 aiCoachName: string;
-                dailyFocusTaskId: string | null;
-                userId: string;
             } | null;
         };
         tokens: {
@@ -32,17 +31,16 @@ export declare class AuthService {
             displayName: string;
             subscriptionTier: import("generated/prisma").$Enums.SubscriptionTier;
             aiUsageCount: number;
-            subscriptionEndDate: Date | null;
+            subscriptionEndDate: string | null;
             settings: {
                 createdAt: Date;
                 updatedAt: Date;
                 sprintDurationWeeks: number;
+                userId: string;
                 dailyCheckinEnabled: boolean;
                 dailyCheckinTime: string;
                 retrospectiveEnabled: boolean;
                 aiCoachName: string;
-                dailyFocusTaskId: string | null;
-                userId: string;
             } | null;
         };
         tokens: {
@@ -69,29 +67,27 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
             sprintDurationWeeks: number;
+            userId: string;
             dailyCheckinEnabled: boolean;
             dailyCheckinTime: string;
             retrospectiveEnabled: boolean;
             aiCoachName: string;
-            dailyFocusTaskId: string | null;
-            userId: string;
         } | null;
         badges: {
-            type: string;
             id: string;
             createdAt: Date;
             name: string;
-            criteria: string;
-            icon: string;
+            description: string;
+            iconUrl: string | null;
         }[];
         unreadNotifications: {
-            type: import("generated/prisma").$Enums.NotificationType;
             message: string;
             id: string;
             createdAt: Date;
             userId: string;
-            isRead: boolean;
             projectId: string | null;
+            isRead: boolean;
+            type: import("generated/prisma").$Enums.NotificationType;
         }[];
     }>;
     static verifyEmail(token: string): Promise<void>;

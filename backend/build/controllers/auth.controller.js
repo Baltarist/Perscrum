@@ -25,8 +25,12 @@ AuthController.register = (0, errorHandler_middleware_1.asyncHandler)(async (req
 });
 // POST /api/auth/login
 AuthController.login = (0, errorHandler_middleware_1.asyncHandler)(async (req, res) => {
+    console.log('🎯 AUTH CONTROLLER: Login request received');
+    console.log('🎯 Request body:', { email: req.body.email, passwordLength: req.body.password?.length });
     const result = await auth_service_1.AuthService.login(req.body);
-    res.status(200).json({
+    console.log('🎯 AUTH CONTROLLER: AuthService.login returned successfully');
+    console.log('🎯 Result user email:', result.user.email);
+    const response = {
         success: true,
         data: {
             message: 'Login successful',
@@ -36,7 +40,10 @@ AuthController.login = (0, errorHandler_middleware_1.asyncHandler)(async (req, r
         meta: {
             timestamp: new Date().toISOString()
         }
-    });
+    };
+    console.log('🎯 AUTH CONTROLLER: Sending response to frontend...');
+    res.status(200).json(response);
+    console.log('✅ AUTH CONTROLLER: Response sent successfully!');
 });
 // POST /api/auth/refresh
 AuthController.refreshToken = (0, errorHandler_middleware_1.asyncHandler)(async (req, res) => {

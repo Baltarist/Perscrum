@@ -32,6 +32,8 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
   const [description, setDescription] = useState('');
   const [colorTheme, setColorTheme] = useState('blue');
   const [targetDate, setTargetDate] = useState('');
+  const [totalSprints, setTotalSprints] = useState(5);
+  const [sprintDurationWeeks, setSprintDurationWeeks] = useState<1 | 2>(2);
   const [weeklyHours, setWeeklyHours] = useState(10);
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -49,12 +51,22 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
     e.preventDefault();
     if (!title.trim() || !targetDate || isCreating) return;
     
-    let filePart: Part | undefined;
-    if (file) {
-      filePart = await fileToGenerativePart(file);
-    }
+    // TODO: AI integration will be added in Phase 3
+    // let filePart: Part | undefined;
+    // if (file) {
+    //   filePart = await fileToGenerativePart(file);
+    // }
     
-    onAddProject({ title, description, colorTheme, targetCompletionDate: targetDate, weeklyHourCommitment: weeklyHours, filePart });
+    onAddProject({ 
+      title, 
+      description, 
+      colorTheme, 
+      targetCompletionDate: targetDate, 
+      totalSprints,
+      sprintDurationWeeks,
+      weeklyHourCommitment: weeklyHours
+      // filePart  // Will be added in Phase 3 AI integration
+    });
   };
 
   if (!isOpen) return null;
@@ -63,7 +75,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 transition-opacity">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">AI Destekli Proje Oluştur</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Yeni Proje Oluştur</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <XIcon className="w-6 h-6" />
           </button>
@@ -84,7 +96,8 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               placeholder="Proje hedefleriniz... AI bu bilgiyi görev önermek için kullanacak." />
           </div>
           
-           <div>
+          {/* AI File Upload - Temporarily disabled until Phase 3 */}
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dosya Ekle (İsteğe bağlı)</label>
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
               <div className="space-y-1 text-center">
@@ -103,13 +116,29 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
                 <p className="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, PDF, TXT, MD</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="target-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hedef Bitiş Tarihi</label>
               <input type="date" id="target-date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)}
                 className="mt-1 block w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none" required />
+            </div>
+            <div>
+              <label htmlFor="total-sprints" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Toplam Sprint Sayısı</label>
+              <input type="number" id="total-sprints" value={totalSprints} onChange={(e) => setTotalSprints(parseInt(e.target.value, 10))} min="1" max="50"
+                className="mt-1 block w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none" required />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="sprint-duration" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sprint Süresi</label>
+              <select id="sprint-duration" value={sprintDurationWeeks} onChange={(e) => setSprintDurationWeeks(parseInt(e.target.value) as 1 | 2)}
+                className="mt-1 block w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none" required>
+                <option value={1}>1 Hafta</option>
+                <option value={2}>2 Hafta</option>
+              </select>
             </div>
             <div>
               <label htmlFor="weekly-hours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Haftalık Saat Taahhüdü</label>
