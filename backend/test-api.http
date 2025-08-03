@@ -1,0 +1,144 @@
+# Kişisel Scrum Koçu AI - API Test Endpoints
+# Use with VS Code REST Client extension or similar
+
+### Health Check
+GET http://localhost:5000/health
+
+### API Info
+GET http://localhost:5000/api
+
+### Test Database Connection
+GET http://localhost:5000/api/test-db
+
+---
+
+### 1. USER REGISTRATION
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "displayName": "Test User"
+}
+
+---
+
+### 2. USER LOGIN (use registered user)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alex@example.com",
+  "password": "password123"
+}
+
+---
+
+### 3. USER LOGIN (Test user)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+# Save the accessToken from login response for next requests
+
+---
+
+### 4. GET CURRENT USER PROFILE
+GET http://localhost:5000/api/auth/me
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 5. GET USER PROFILE (detailed)
+GET http://localhost:5000/api/users/profile
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 6. UPDATE USER PROFILE
+PUT http://localhost:5000/api/users/profile
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "displayName": "Updated Test User"
+}
+
+---
+
+### 7. GET USER SETTINGS
+GET http://localhost:5000/api/users/settings
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 8. UPDATE USER SETTINGS
+PUT http://localhost:5000/api/users/settings
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "sprintDurationWeeks": 2,
+  "dailyCheckinEnabled": true,
+  "dailyCheckinTime": "10:00",
+  "aiCoachName": "Sofia"
+}
+
+---
+
+### 9. DAILY CHECKIN
+POST http://localhost:5000/api/users/checkin
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "mood": "productive",
+  "notes": "Great day working on the backend!"
+}
+
+---
+
+### 10. GET USER BADGES
+GET http://localhost:5000/api/users/badges
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 11. GET USER NOTIFICATIONS
+GET http://localhost:5000/api/users/notifications
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 12. GET USER STATS
+GET http://localhost:5000/api/users/stats
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### 13. REFRESH TOKEN
+POST http://localhost:5000/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN_HERE"
+}
+
+---
+
+### 14. LOGOUT
+POST http://localhost:5000/api/auth/logout
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+---
+
+### Future Routes (Phase 2)
+GET http://localhost:5000/api/projects
+GET http://localhost:5000/api/sprints
+GET http://localhost:5000/api/tasks
+GET http://localhost:5000/api/ai
