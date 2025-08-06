@@ -1,0 +1,47 @@
+### Analytics API Test File
+### Use this file to test the new Analytics endpoints
+
+@baseUrl = http://localhost:5000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MDFlODRiZS1iYTQ4LTQ1MzMtODBjYi1jMjg0ZjQ0YTA2MzMiLCJlbWFpbCI6InRlc3QyQGV4YW1wbGUuY29tIiwic3Vic2NyaXB0aW9uVGllciI6ImZyZWUiLCJpYXQiOjE3NTQzNDA1MjksImV4cCI6MTc1NDM0MTQyOSwiYXVkIjoic2NydW0tY29hY2gtY2xpZW50IiwiaXNzIjoic2NydW0tY29hY2gtYXBpIn0.2ijIJuW0FdCW2OTf_xWIxwtYiBlOS20KZlG3H_h2yT0
+@projectId = c3bb3629-2d1b-4fa3-9cee-bb3a7d73d31b
+@sprintId = 18ce1629-74a7-46fa-8dbe-4c81975a6c07
+@userId = 401e84be-ba48-4533-80cb-c284f44a0633
+
+### 1. Get Project Velocity Data
+GET {{baseUrl}}/api/analytics/velocity/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 2. Get User Velocity History
+GET {{baseUrl}}/api/analytics/velocity/user/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### 3. Get Sprint Burndown Data
+GET {{baseUrl}}/api/analytics/burndown/{{sprintId}}
+Authorization: Bearer {{accessToken}}
+
+### 4. Get Sprint Burndown Data (Regenerate)
+GET {{baseUrl}}/api/analytics/burndown/{{sprintId}}?regenerate=true
+Authorization: Bearer {{accessToken}}
+
+### 5. Calculate Sprint Analytics
+POST {{baseUrl}}/api/analytics/sprint/{{sprintId}}/calculate
+Authorization: Bearer {{accessToken}}
+
+### 6. Get Sprint Metrics
+GET {{baseUrl}}/api/analytics/sprint/{{sprintId}}/metrics
+Authorization: Bearer {{accessToken}}
+
+### 7. Get Project Analytics
+GET {{baseUrl}}/api/analytics/project/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 8. Get Analytics Dashboard
+GET {{baseUrl}}/api/analytics/dashboard/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### 9. Recalculate Project Analytics
+POST {{baseUrl}}/api/analytics/recalculate/{{projectId}}
+Authorization: Bearer {{accessToken}}
+
+### 10. Health Check (verify server is running)
+GET {{baseUrl}}/health

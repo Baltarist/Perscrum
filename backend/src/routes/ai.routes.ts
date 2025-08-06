@@ -6,7 +6,8 @@ import { validate } from '../middleware/validation.middleware';
 import { 
   aiTaskSuggestionsSchema, 
   aiChatSchema, 
-  aiSubtaskSuggestionsSchema 
+  aiSubtaskSuggestionsSchema,
+  aiEducationalContentSchema 
 } from '../utils/validation';
 import { globalRateLimit } from '../middleware/rateLimit.middleware';
 
@@ -56,5 +57,25 @@ router.post(
   })),
   AIController.analyzeSprintRetrospective
 );
+
+// Educational content endpoint
+router.post(
+  '/educational-content',
+  validate(aiEducationalContentSchema),
+  AIController.generateEducationalContent
+);
+
+// AI Context Enhancement endpoints
+router.get('/learning-profile', AIController.getLearningProfile);
+router.post(
+  '/learning-feedback', 
+  validate(z.object({
+    topic: z.string().min(3),
+    performance: z.enum(['good', 'fair', 'poor'])
+  })),
+  AIController.provideLearningFeedback
+);
+router.get('/interaction-history', AIController.getInteractionHistory);
+router.get('/project-analytics/:projectId', AIController.getProjectAnalytics);
 
 export default router;

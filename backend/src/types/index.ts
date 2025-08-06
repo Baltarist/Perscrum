@@ -155,13 +155,14 @@ export interface AISubtaskSuggestionsRequest {
   context?: string;
 }
 
-export interface AIRetrospectiveRequest {
-  sprintId: string;
-}
-
 export interface AIEducationalContentRequest {
   topic: string;
-  level?: 'beginner' | 'intermediate' | 'advanced';
+  level: 'beginner' | 'intermediate' | 'advanced';
+  contentType: 'guide' | 'tips' | 'best_practices' | 'methodology';
+}
+
+export interface AIRetrospectiveRequest {
+  sprintId: string;
 }
 
 // Analytics Types

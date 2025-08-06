@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { Task, TaskStatus, User, Subtask, CustomError } from '../types';
 import { SprintService } from './sprint.service';
+import { getSocketServer } from '../sockets/socketServer';
 
 export interface CreateTaskData {
   title: string;
@@ -144,7 +145,10 @@ export class TaskService {
         assignee: {
           select: { id: true, displayName: true, email: true }
         },
-        subtasks: true
+        subtasks: true,
+        sprint: {
+          select: { id: true, projectId: true }
+        }
       }
     });
 
@@ -157,6 +161,38 @@ export class TaskService {
           message: `New task "${task.title}" has been assigned to you`
         }
       });
+    }
+
+    // Broadcast real-time update
+    const socketServer = getSocketServer();
+    if (socketServer && task.sprint) {
+      socketServer.broadcastTaskUpdate(
+        task.id,
+        {
+          action: 'created',
+          task: {
+            id: task.id,
+            title: task.title,
+            status: task.status,
+            storyPoints: task.storyPoints,
+            assignee: task.assignee,
+            createdBy: task.createdBy
+          }
+        },
+        task.sprint.projectId,
+        task.sprintId
+      );
+
+      // Send real-time notification to assignee
+      if (data.assigneeId && data.assigneeId !== userId) {
+        socketServer.broadcastNotification(data.assigneeId, {
+          type: 'task_assigned',
+          title: 'Yeni Görev Atandı',
+          message: `"${task.title}" görevi size atandı`,
+          taskId: task.id,
+          projectId: task.sprint.projectId
+        });
+      }
     }
 
     return task as any;
@@ -204,7 +240,10 @@ export class TaskService {
         assignee: {
           select: { id: true, displayName: true, email: true }
         },
-        subtasks: true
+        subtasks: true,
+        sprint: {
+          select: { id: true, projectId: true }
+        }
       }
     });
 
@@ -219,6 +258,51 @@ export class TaskService {
       });
     }
 
+    // Broadcast real-time update
+    const socketServer = getSocketServer();
+    if (socketServer && updatedTask.sprint) {
+      const changedFields = Object.keys(data);
+      socketServer.broadcastTaskUpdate(
+        updatedTask.id,
+        {
+          action: 'updated',
+          changedFields,
+          task: {
+            id: updatedTask.id,
+            title: updatedTask.title,
+            status: updatedTask.status,
+            storyPoints: updatedTask.storyPoints,
+            assignee: updatedTask.assignee,
+            completedAt: updatedTask.completedAt
+          }
+        },
+        updatedTask.sprint.projectId,
+        updatedTask.sprintId
+      );
+
+      // Send real-time notification for status change
+      if (data.status && updatedTask.assigneeId && updatedTask.assigneeId !== userId) {
+        socketServer.broadcastNotification(updatedTask.assigneeId, {
+          type: 'task_status_changed',
+          title: 'Görev Durumu Değişti',
+          message: `"${updatedTask.title}" görevinin durumu ${data.status} olarak güncellendi`,
+          taskId: updatedTask.id,
+          projectId: updatedTask.sprint.projectId
+        });
+      }
+
+      // Send notification for assignment change
+      if (data.assigneeId && data.assigneeId !== currentTask.assigneeId && data.assigneeId !== userId) {
+        socketServer.broadcastNotification(data.assigneeId, {
+          type: 'task_assigned',
+          title: 'Yeni Görev Atandı',
+          message: `"${updatedTask.title}" görevi size atandı`,
+          taskId: updatedTask.id,
+          projectId: updatedTask.sprint.projectId
+        });
+      }
+    }
+
     return updatedTask as any;
   }
 
@@ -231,9 +315,33 @@ export class TaskService {
       throw new CustomError('Only task creator can delete task', 403);
     }
 
+    // Get sprint info for broadcasting
+    const taskWithSprint = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        sprint: {
+          select: { id: true, projectId: true }
+        }
+      }
+    });
+
     await prisma.task.delete({
       where: { id: taskId }
     });
+
+    // Broadcast real-time update
+    const socketServer = getSocketServer();
+    if (socketServer && taskWithSprint?.sprint) {
+      socketServer.broadcastTaskUpdate(
+        taskId,
+        {
+          action: 'deleted',
+          taskId
+        },
+        taskWithSprint.sprint.projectId,
+        taskWithSprint.sprintId
+      );
+    }
   }
 
   // Create subtask

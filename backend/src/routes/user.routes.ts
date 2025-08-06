@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/user.controller';
+import { TaskController } from '../controllers/task.controller';
 import { validate, validateUuid } from '../middleware/validation.middleware';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { 
@@ -73,6 +74,11 @@ router.get('/stats',
 // DELETE /api/users/account - Delete user account
 router.delete('/account',
   UserController.deleteAccount
+);
+
+// GET /api/users/tasks - Get user tasks
+router.get('/tasks', 
+  TaskController.getUserTasks
 );
 
 export default router;

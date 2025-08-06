@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { TaskController } from '../controllers/task.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validation.middleware';
-import { updateSubtaskSchema } from '../utils/validation';
+import { 
+  updateSubtaskSchema 
+} from '../utils/validation';
 import { globalRateLimit } from '../middleware/rateLimit.middleware';
 
 const router = Router();
@@ -11,7 +13,7 @@ const router = Router();
 router.use(authenticateToken);
 router.use(globalRateLimit);
 
-// Subtask routes
+// Subtask CRUD routes
 router.put('/:id', validate(updateSubtaskSchema), TaskController.updateSubtask);
 router.delete('/:id', TaskController.deleteSubtask);
 

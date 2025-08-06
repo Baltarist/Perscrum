@@ -31,13 +31,25 @@ const KanbanColumn: React.FC<{
         </span>
       </h3>
       <div
-        className="space-y-3"
+        className="space-y-3 min-h-[200px]"
         onDrop={(e) => {
           e.preventDefault();
           const taskId = e.dataTransfer.getData('text/plain');
-          onDrop(taskId, title);
+          console.log(`🎯 DROP: Task ${taskId} → ${title}`);
+          if (taskId) {
+            onDrop(taskId, title);
+          } else {
+            console.error(`❌ DROP: No taskId found!`);
+          }
         }}
-        onDragOver={(e) => e.preventDefault()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          console.log(`🎯 DRAG ENTER: ${title} column`);
+        }}
       >
         {tasks.map(renderTask)}
       </div>
@@ -141,7 +153,21 @@ const KanbanBoardApi: React.FC = () => {
 
   const handleDrop = async (taskId: string, newStatus: TaskStatus) => {
     if (activeSprint) {
-      await updateTaskStatus(taskId, newStatus);
+      console.log(`🔄 DRAG & DROP: Task ${taskId} → ${newStatus}`);
+      try {
+        const success = await updateTaskStatus(taskId, newStatus);
+        if (success) {
+          console.log(`✅ DRAG & DROP: Status updated successfully`);
+          // Force refresh to get updated data
+          console.log(`🔄 REFRESHING: Loading updated projects...`);
+          await loadProjects();
+          console.log(`✅ PROJECTS REFRESHED: UI should update now`);
+        } else {
+          console.error(`❌ DRAG & DROP: Status update failed`);
+        }
+      } catch (error) {
+        console.error(`❌ DRAG & DROP: Error updating status:`, error);
+      }
     }
   };
   
@@ -198,9 +224,17 @@ const KanbanBoardApi: React.FC = () => {
     <div
       key={task.id}
       draggable
-      onDragStart={(e) => e.dataTransfer.setData('text/plain', task.id)}
+      onDragStart={(e) => {
+        console.log(`🎯 DRAG START: Task ${task.id} (${task.title})`);
+        e.dataTransfer.setData('text/plain', task.id);
+        e.dataTransfer.effectAllowed = 'move';
+      }}
+      onDragEnd={(e) => {
+        console.log(`🏁 DRAG END: Task ${task.id}`);
+      }}
       onClick={() => handleTaskClick(task.id, activeSprint?.id || '')}
-      className="cursor-pointer"
+      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      style={{ opacity: 1 }}
     >
       <TaskCard
         task={task}

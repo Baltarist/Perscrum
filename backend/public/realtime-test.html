@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Scrum Coach - Real-time Test</title>
+    <!-- CSP ayarları: Socket.io CDN ve inline script'lere izin ver -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.socket.io; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .status-card.error {
+            border-left-color: #f44336;
+        }
+        
+        .status-card.warning {
+            border-left-color: #ff9800;
+        }
+        
+        .logs {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-success { background: rgba(76, 175, 80, 0.3); }
+        .log-error { background: rgba(244, 67, 54, 0.3); }
+        .log-warning { background: rgba(255, 152, 0, 0.3); }
+        .log-info { background: rgba(33, 150, 243, 0.3); }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 200px;
+        }
+        
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .notification {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .task-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Scrum Coach Real-time Test</h1>
+        
+        <div class="status-panel">
+            <div class="status-card" id="connectionStatus">
+                <h3>🔌 Bağlantı Durumu</h3>
+                <p id="connectionText">Bağlanıyor...</p>
+            </div>
+            
+            <div class="status-card" id="userStatus">
+                <h3>👤 Kullanıcı</h3>
+                <p id="userText">Giriş yapmadı</p>
+            </div>
+            
+            <div class="status-card" id="projectStatus">
+                <h3>📋 Proje</h3>
+                <p id="projectText">Proje seçilmedi</p>
+            </div>
+            
+            <div class="status-card" id="activityStatus">
+                <h3>⚡ Aktivite</h3>
+                <p id="activityText">Bekliyor...</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="tokenInput" placeholder="JWT Token girin..." />
+            <button onclick="connectSocket()">🔌 Bağlan</button>
+            <button onclick="joinProject()" id="joinProjectBtn" disabled>🏠 Projeye Katıl</button>
+            <button onclick="createTestTask()" id="createTaskBtn" disabled>📝 Test Task Oluştur</button>
+            <button onclick="updateTestTaskStatus()" id="updateTaskStatusBtn" disabled>🔄 Task Status Güncelle</button>
+            <button onclick="clearLogs()">🧹 Logları Temizle</button>
+        </div>
+        
+        <div class="logs" id="logs"></div>
+        
+        <div id="notifications"></div>
+        
+        <div id="tasks"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isConnected = false;
+        let currentToken = null;
+        let currentProject = 'c3bb3629-2d1b-4fa3-9cee-bb3a7d73d31b'; // User's project ID
+        let currentSprint = '18ce1629-74a7-46fa-8dbe-4c81975a6c07'; // User's active sprint ID
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString('tr-TR');
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStatus(elementId, text, isError = false) {
+            const element = document.getElementById(elementId);
+            const card = element.closest('.status-card');
+            
+            document.getElementById(elementId.replace('Status', 'Text')).textContent = text;
+            
+            if (isError) {
+                card.className = 'status-card error';
+            } else if (text.includes('Bağlandı') || text.includes('Katıldı') || text.includes('Giriş yapıldı')) {
+                card.className = 'status-card';
+            } else {
+                card.className = 'status-card warning';
+            }
+        }
+
+        function connectSocket() {
+            const token = document.getElementById('tokenInput').value.trim();
+            
+            if (!token) {
+                log('❌ Lütfen JWT token girin!', 'error');
+                return;
+            }
+            
+            currentToken = token;
+            
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            log('🔌 Socket.io sunucusuna bağlanıyor...', 'info');
+            
+            socket = io('http://localhost:5000', {
+                auth: { token: token },
+                transports: ['websocket', 'polling']
+            });
+            
+            socket.on('connect', () => {
+                isConnected = true;
+                log('✅ Socket.io sunucusuna bağlandı!', 'success');
+                updateStatus('connectionStatus', 'Bağlandı ✅');
+                document.getElementById('joinProjectBtn').disabled = false;
+                document.getElementById('createTaskBtn').disabled = false;
+                document.getElementById('updateTaskStatusBtn').disabled = false;
+            });
+            
+            socket.on('connected', (data) => {
+                log(`🎉 Hoş geldiniz ${data.userName}!`, 'success');
+                updateStatus('userStatus', `Giriş yapıldı: ${data.userName}`);
+            });
+            
+            socket.on('disconnect', () => {
+                isConnected = false;
+                log('🔌 Bağlantı kesildi', 'warning');
+                updateStatus('connectionStatus', 'Bağlantı kesildi ⚠️', true);
+                document.getElementById('joinProjectBtn').disabled = true;
+                document.getElementById('createTaskBtn').disabled = true;
+                document.getElementById('updateTaskStatusBtn').disabled = true;
+            });
+            
+            socket.on('connect_error', (error) => {
+                log(`❌ Bağlantı hatası: ${error.message}`, 'error');
+                updateStatus('connectionStatus', 'Bağlantı hatası ❌', true);
+            });
+            
+            socket.on('project_joined', (data) => {
+                log(`🏠 Projeye katıldı: ${data.projectTitle}`, 'success');
+                updateStatus('projectStatus', `Katıldı: ${data.projectTitle}`);
+                document.getElementById('createTaskBtn').disabled = false;
+                
+                log(`👥 Aktif kullanıcılar: ${data.activeUsers.length}`, 'info');
+            });
+            
+            socket.on('task_updated', (data) => {
+                log(`📋 Task güncellemesi: ${data.taskData.action}`, 'info');
+                updateStatus('activityStatus', `Son aktivite: Task ${data.taskData.action}`);
+                
+                if (data.taskData.task) {
+                    displayTask(data.taskData.task, data.taskData.action);
+                }
+            });
+            
+            socket.on('notification', (notification) => {
+                log(`🔔 Bildirim: ${notification.message}`, 'success');
+                showNotification(notification);
+            });
+            
+            socket.on('user_joined_project', (data) => {
+                log(`👤 ${data.userName} projeye katıldı`, 'info');
+            });
+            
+            socket.on('user_left_project', (data) => {
+                log(`👋 ${data.userName} projeyi terk etti`, 'info');
+            });
+            
+            socket.on('error', (error) => {
+                log(`❌ Socket hatası: ${error.message}`, 'error');
+            });
+        }
+
+        function joinProject() {
+            if (!socket || !isConnected) {
+                log('❌ Önce Socket.io sunucusuna bağlanın!', 'error');
+                return;
+            }
+            
+            log(`🏠 Projeye katılıyor: ${currentProject}`, 'info');
+            socket.emit('join_project', { projectId: currentProject });
+        }
+
+        async function createTestTask() {
+            if (!currentToken) {
+                log('❌ Önce giriş yapın!', 'error');
+                return;
+            }
+            
+            try {
+                log('📝 Test task oluşturuluyor...', 'info');
+                
+                const taskData = {
+                    title: `Real-time Test Task ${new Date().getTime()}`,
+                    description: 'Bu Socket.io test için oluşturulmuş bir görevdir',
+                    storyPoints: Math.floor(Math.random() * 5) + 1,
+                    status: 'todo'
+                };
+                
+                const response = await fetch(`http://localhost:5000/api/projects/${currentProject}/sprints/${currentSprint}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    lastCreatedTaskId = result.data.task.id;
+                    log(`✅ Task oluşturuldu: ${result.data.task.title}`, 'success');
+                    log(`🆔 Task ID: ${lastCreatedTaskId}`, 'info');
+                } else {
+                    const error = await response.json();
+                    log(`❌ Task oluşturma hatası: ${error.error?.message || 'Bilinmeyen hata'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function displayTask(task, action) {
+            const tasksDiv = document.getElementById('tasks');
+            
+            const taskCard = document.createElement('div');
+            taskCard.className = 'task-card';
+            taskCard.innerHTML = `
+                <h4>${task.title} <span style="opacity: 0.7;">[${action.toUpperCase()}]</span></h4>
+                <p><strong>Durum:</strong> ${task.status}</p>
+                <p><strong>Story Points:</strong> ${task.storyPoints}</p>
+                <p><strong>Atanan:</strong> ${task.assignee ? task.assignee.displayName : 'Atanmamış'}</p>
+                <small>${new Date().toLocaleString('tr-TR')}</small>
+            `;
+            
+            tasksDiv.insertBefore(taskCard, tasksDiv.firstChild);
+            
+            // Keep only last 5 tasks
+            while (tasksDiv.children.length > 5) {
+                tasksDiv.removeChild(tasksDiv.lastChild);
+            }
+        }
+
+        function showNotification(notification) {
+            const notificationsDiv = document.getElementById('notifications');
+            
+            const notificationEl = document.createElement('div');
+            notificationEl.className = 'notification';
+            notificationEl.innerHTML = `
+                <h4>${notification.title || '🔔 Bildirim'}</h4>
+                <p>${notification.message}</p>
+                <small>${new Date().toLocaleString('tr-TR')}</small>
+            `;
+            
+            notificationsDiv.appendChild(notificationEl);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notificationEl.parentNode) {
+                    notificationEl.parentNode.removeChild(notificationEl);
+                }
+            }, 5000);
+        }
+
+        async function updateTestTaskStatus() {
+            if (!currentToken) {
+                log('❌ Önce giriş yapın!', 'error');
+                return;
+            }
+            
+            if (!lastCreatedTaskId) {
+                log('❌ Önce bir task oluşturun!', 'error');
+                return;
+            }
+            
+            try {
+                log('🔄 Task status güncelleniyor...', 'info');
+                
+                const statuses = ['todo', 'in_progress', 'review', 'done'];
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                
+                const response = await fetch(`http://localhost:5000/api/tasks/${lastCreatedTaskId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ status: randomStatus })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Task status güncellendi: ${randomStatus}`, 'success');
+                } else {
+                    const error = await response.json();
+                    log(`❌ Status güncelleme hatası: ${error.error?.message || 'Bilinmeyen hata'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Bağlantı hatası: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            log('🧹 Loglar temizlendi', 'info');
+        }
+
+        // Initial log
+        log('🚀 Scrum Coach Real-time Test sayfası yüklendi', 'success');
+        log('💡 JWT token girerek Socket.io bağlantısını test edebilirsiniz', 'info');
+    </script>
+</body>
+</html>

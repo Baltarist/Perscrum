@@ -128,14 +128,17 @@ export const aiSubtaskSuggestionsSchema = z.object({
   context: z.string().max(500).optional()
 });
 
+export const aiEducationalContentSchema = z.object({
+  topic: z.string().min(3, 'Topic must be at least 3 characters').max(100, 'Topic too long'),
+  level: z.enum(['beginner', 'intermediate', 'advanced']),
+  contentType: z.enum(['guide', 'tips', 'best_practices', 'methodology'])
+});
+
 export const aiRetrospectiveSchema = z.object({
   sprintId: z.string().uuid()
 });
 
-export const aiEducationalContentSchema = z.object({
-  topic: z.string().min(3, 'Topic must be at least 3 characters').max(100, 'Topic too long'),
-  level: z.enum(['beginner', 'intermediate', 'advanced']).optional()
-});
+
 
 // Subscription validation schemas
 export const subscriptionUpgradeSchema = z.object({

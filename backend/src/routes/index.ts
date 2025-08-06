@@ -5,6 +5,7 @@ import projectRoutes from './project.routes';
 import sprintRoutes from './sprint.routes';
 import taskRoutes from './task.routes';
 import subtaskRoutes from './subtask.routes';
+import analyticsRoutes from './analytics.routes';
 import aiRoutes from './ai.routes';
 
 const router = Router();
@@ -16,6 +17,7 @@ router.use('/projects', projectRoutes);
 router.use('/sprints', sprintRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/subtasks', subtaskRoutes);
+router.use('/analytics', analyticsRoutes);
 router.use('/ai', aiRoutes);
 
 // Health check endpoint (alternative location)

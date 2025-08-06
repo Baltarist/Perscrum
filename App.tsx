@@ -5,6 +5,7 @@ import { AuthProvider } from './hooks/useAuth';
 import { AuthProvider as AuthApiProvider } from './hooks/useAuthApi';
 import { ProjectProvider } from './hooks/useProjectData';
 import { ProjectApiProvider } from './hooks/useProjectApi';
+import { useSocket } from './hooks/useSocket';
 import LoginPage from './components/LoginPage';
 import LoginPageApi from './components/LoginPageApi';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,6 +25,36 @@ import SubscriptionPage from './components/SubscriptionPage';
 import CheckoutPage from './components/CheckoutPage';
 import LegalPage from './components/LegalPage';
 
+// Socket.io Provider Component
+const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isConnected, connect, lastTaskUpdate, lastNotification } = useSocket();
+
+  React.useEffect(() => {
+    // Auto-connect when component mounts (if user is logged in)
+    const token = localStorage.getItem('accessToken');
+    if (token && !isConnected) {
+      connect(token).catch(console.error);
+    }
+  }, [connect, isConnected]);
+
+  // Display real-time notifications
+  React.useEffect(() => {
+    if (lastNotification) {
+      console.log('🔔 Real-time Notification:', lastNotification);
+      // You can add toast notification here
+    }
+  }, [lastNotification]);
+
+  React.useEffect(() => {
+    if (lastTaskUpdate) {
+      console.log('📋 Real-time Task Update:', lastTaskUpdate);
+      // You can trigger UI updates here
+    }
+  }, [lastTaskUpdate]);
+
+  return <>{children}</>;
+};
+
 const App: React.FC = () => {
   return (
     <HashRouter>
@@ -31,6 +62,7 @@ const App: React.FC = () => {
         <AuthProvider>
           <ProjectApiProvider>
             <ProjectProvider>
+              <SocketProvider>
               <Routes>
             <Route path="/login" element={<LoginPageApi />} />
             <Route path="/login-mock" element={<LoginPage />} />
@@ -60,6 +92,7 @@ const App: React.FC = () => {
               }
             />
               </Routes>
+              </SocketProvider>
             </ProjectProvider>
           </ProjectApiProvider>
         </AuthProvider>

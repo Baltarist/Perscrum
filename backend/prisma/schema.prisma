@@ -79,6 +79,10 @@ model User {
   badges               UserBadge[]
   dailyCheckins        DailyCheckin[]
   notifications        Notification[]
+  aiInteractions       AIInteractionHistory[]
+  learningProfile      UserLearningProfile?
+  projectAnalytics     ProjectAnalytics[]
+  velocityTracking     VelocityTracking[]
 
   @@map("users")
 }
@@ -118,6 +122,9 @@ model Project {
   teamMembers             TeamMember[]
   sprints                 Sprint[]
   notifications           Notification[]
+  analytics               ProjectAnalytics[]
+  velocityTracking        VelocityTracking[]
+  sprintAnalytics         SprintAnalytics[]
 
   @@map("projects")
 }
@@ -154,6 +161,9 @@ model Sprint {
   // Relations
   project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tasks                Task[]
+  velocityTracking     VelocityTracking[]
+  burndownData         BurndownData[]
+  sprintAnalytics      SprintAnalytics?
 
   @@unique([projectId, sprintNumber])
   @@map("sprints")
@@ -304,4 +314,123 @@ model Notification {
   project   Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// AI Context Enhancement Tables
+model AIInteractionHistory {
+  id            String   @id @default(uuid())
+  userId        String
+  sessionId     String
+  interactionType String // 'chat', 'task_suggestion', 'subtask_suggestion', 'educational_content'
+  input         String
+  output        String
+  context       Json?    // Project/sprint context
+  feedback      String?  // User feedback on AI response
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_interaction_history")
+}
+
+model UserLearningProfile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  currentLevel        String   @default("beginner") // beginner, intermediate, advanced
+  preferredContentType String  @default("guide") // guide, tips, best_practices, methodology
+  learningGoals       Json?    // User's learning objectives
+  topicsCompleted     Json?    // Completed educational topics
+  weakAreas           Json?    // Areas needing improvement
+  strongAreas         Json?    // Areas of strength
+  lastLevelUpdate     DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_learning_profiles")
+}
+
+model ProjectAnalytics {
+  id                    String   @id @default(uuid())
+  projectId             String
+  userId                String
+  sprintCompletionRate  Float?   // Average sprint completion rate
+  taskVelocity          Float?   // Average story points per sprint
+  aiUsageFrequency      Int      @default(0)
+  commonChallenges      Json?    // Frequently encountered issues
+  improvementAreas      Json?    // AI-identified areas for improvement
+  successPatterns       Json?    // Successful behavior patterns
+  lastAnalyzed          DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_analytics")
+}
+
+// Additional Analytics and Reporting models
+model VelocityTracking {
+  id                   String   @id @default(uuid())
+  sprintId             String
+  projectId            String
+  userId               String
+  completedStoryPoints Int
+  totalStoryPoints     Int
+  completedTasks       Int
+  totalTasks          Int
+  sprintDuration       Int // days
+  calculatedAt         DateTime @default(now())
+  
+  // Relations
+  sprint               Sprint   @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([sprintId, userId])
+  @@map("velocity_tracking")
+}
+
+model BurndownData {
+  id              String   @id @default(uuid())
+  sprintId        String
+  date            DateTime
+  remainingPoints Int
+  remainingTasks  Int
+  idealPoints     Float
+  completedPoints Int
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  sprint          Sprint   @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  
+  @@unique([sprintId, date])
+  @@map("burndown_data")
+}
+
+model SprintAnalytics {
+  id                    String   @id @default(uuid())
+  sprintId              String   @unique
+  projectId             String
+  velocityPoints        Int
+  completionRate        Float    // percentage
+  averageTaskDuration   Float    // days
+  teamEfficiency        Float    // 0-1 scale
+  burndownTrend         String   // "ahead", "on_track", "behind"
+  predictedCompletion   DateTime?
+  riskFactors           Json     // array of risk indicators
+  recommendations       Json     // array of improvement suggestions
+  generatedAt           DateTime @default(now())
+  
+  // Relations
+  sprint                Sprint   @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("sprint_analytics")
 }
